@@ -1,3 +1,3 @@
 streamlit
 pandas
-gdown
+gdown==4.5.1
