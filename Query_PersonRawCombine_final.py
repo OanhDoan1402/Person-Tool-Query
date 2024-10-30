@@ -10,9 +10,15 @@ db_path = "combined_data.db"
 
 # URLs của các file trên Google Drive
 file_urls = [
-    'https://drive.google.com/uc?id=1NCCXd9ei81ImegtIr5KdAPr0O1-A7J7F&export=download',
-    'https://drive.google.com/uc?id=1kCa4qKFVGkePKM3ltP_Zw65-trgdy9X2&export=download',
-    'https://drive.google.com/uc?id=1QmCwQl8aAutlBvDDYbi6jFaqWbwXA-j3&export=download',
+    'https://drive.google.com/uc?id=1NCCXd9ei81ImegtIr5KdAPr0O1-A7J7F',
+    'https://drive.google.com/uc?id=1kCa4qKFVGkePKM3ltP_Zw65-trgdy9X2',
+    'https://drive.google.com/uc?id=1QmCwQl8aAutlBvDDYbi6jFaqWbwXA-j3',
+    'https://drive.google.com/uc?id=1xp75FLWcwwRmDTlhfffzxuujgB1g3mZm',
+    'https://drive.google.com/uc?id=1p2YRevYBlMsuFGx26rlnzAD-3ailTtPq',
+    'https://drive.google.com/uc?id=1-HmYrP873kjFWM2yFFwJTLNsjFKwng4O',
+    'https://drive.google.com/uc?id=1N6zQgTpocGEps9NuG0Pp08wOws2GthaY',
+    'https://drive.google.com/uc?id=1pp_DA7VdrBptFtROxeixfDzq_jQW21V2',
+    'https://drive.google.com/uc?id=1tifuC6Petn1Tpx9AKeeJr5k_pxR9548D'
     # Thêm các URL khác
 ]
 
@@ -57,7 +63,7 @@ st.title("PersonRawCombine Query Tool")
 identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 
 # Kết nối đến SQLite và thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
-if st.button("Tìm kiếm"):
+if st.button("Tìm kiếm nèoo"):
     if identity_number:
         conn = sqlite3.connect(db_path)
         query = "SELECT * FROM PersonData WHERE IdentityNo = ?"
@@ -70,7 +76,7 @@ if st.button("Tìm kiếm"):
         else:
             st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
     else:
-        st.warning("Vui lòng nhập IdentityNo.")
+        st.warning("Quên không nhập IdentityNo kìaa")
 
 # Phân trang kết quả nếu cần thiết
 def paginate_dataframe(df, page_size=20):
