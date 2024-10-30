@@ -48,8 +48,6 @@ def load_data_to_sqlite():
             dfs.append(df)
 
         combined_df = pd.concat(dfs, ignore_index=True)
-        combined_df['BirthYear'] = pd.to_datetime(combined_df['BirthDate'], errors='coerce').dt.year
-
         # Xóa khoảng trắng thừa và chuyển thành chữ thường
         combined_df['IdentityNo'] = combined_df['IdentityNo'].str.strip().str.lower()
 
