@@ -10,15 +10,15 @@ db_path = "combined_data.db"
 
 # URLs của các file trên Google Drive
 file_urls = [
-    'https://drive.google.com/uc?id=1NCCXd9ei81ImegtIr5KdAPr0O1-A7J7F',
-    'https://drive.google.com/uc?id=1kCa4qKFVGkePKM3ltP_Zw65-trgdy9X2',
-    'https://drive.google.com/uc?id=1QmCwQl8aAutlBvDDYbi6jFaqWbwXA-j3',
-    'https://drive.google.com/uc?id=1xp75FLWcwwRmDTlhfffzxuujgB1g3mZm',
-    'https://drive.google.com/uc?id=1p2YRevYBlMsuFGx26rlnzAD-3ailTtPq',
-    'https://drive.google.com/uc?id=1-HmYrP873kjFWM2yFFwJTLNsjFKwng4O',
-    'https://drive.google.com/uc?id=1N6zQgTpocGEps9NuG0Pp08wOws2GthaY',
-    'https://drive.google.com/uc?id=1pp_DA7VdrBptFtROxeixfDzq_jQW21V2',
-    'https://drive.google.com/uc?id=1tifuC6Petn1Tpx9AKeeJr5k_pxR9548D'
+'https://drive.google.com/file/d/1NCCXd9ei81ImegtIr5KdAPr0O1-A7J7F/view?usp=drive_link',
+'https://drive.google.com/file/d/1kCa4qKFVGkePKM3ltP_Zw65-trgdy9X2/view?usp=drive_link',
+'https://drive.google.com/file/d/1QmCwQl8aAutlBvDDYbi6jFaqWbwXA-j3/view?usp=drive_link',
+'https://drive.google.com/file/d/1xp75FLWcwwRmDTlhfffzxuujgB1g3mZm/view?usp=drive_link',
+'https://drive.google.com/file/d/1p2YRevYBlMsuFGx26rlnzAD-3ailTtPq/view?usp=drive_link',
+'https://drive.google.com/file/d/1-HmYrP873kjFWM2yFFwJTLNsjFKwng4O/view?usp=drive_link',
+'https://drive.google.com/file/d/1N6zQgTpocGEps9NuG0Pp08wOws2GthaY/view?usp=drive_link',
+'https://drive.google.com/file/d/1pp_DA7VdrBptFtROxeixfDzq_jQW21V2/view?usp=drive_link',
+'https://drive.google.com/file/d/1tifuC6Petn1Tpx9AKeeJr5k_pxR9548D/view?usp=drive_link'
     # Thêm các URL khác
 ]
 
