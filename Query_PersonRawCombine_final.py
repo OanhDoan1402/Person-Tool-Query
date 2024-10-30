@@ -10,15 +10,15 @@ db_path = "combined_data.db"
 
 # URLs của các file trên Google Drive
 file_urls = [
-    'https://drive.google.com/uc?id=1NCCXd9ei81ImegtIr5KdAPr0O1-A7J7F&export=download',
-    'https://drive.google.com/uc?id=1kCa4qKFVGkePKM3ltP_Zw65-trgdy9X2&export=download',
-    'https://drive.google.com/uc?id=1QmCwQl8aAutlBvDDYbi6jFaqWbwXA-j3&export=download',
-    'https://drive.google.com/uc?id=1xp75FLWcwwRmDTlhfffzxuujgB1g3mZm&export=download',
-    'https://drive.google.com/uc?id=1p2YRevYBlMsuFGx26rlnzAD-3ailTtPq&export=download',
-    'https://drive.google.com/uc?id=1-HmYrP873kjFWM2yFFwJTLNsjFKwng4O&export=download',
-    'https://drive.google.com/uc?id=1N6zQgTpocGEps9NuG0Pp08wOws2GthaY&export=download',
-    'https://drive.google.com/uc?id=1pp_DA7VdrBptFtROxeixfDzq_jQW21V2&export=download',
-    'https://drive.google.com/uc?id=1tifuC6Petn1Tpx9AKeeJr5k_pxR9548D&export=download'
+'https://drive.google.com/uc?id=1mqN10fsClug7tUvDXE-t1-bPGfaJCTt9&export=download',
+'https://drive.google.com/uc?id=1vOXnGrOasv5srNgeOZ7n1n_InukBuuu5&export=download',
+'https://drive.google.com/uc?id=1baH_EJjmhURChp5T0S3fNvTQPzfqIva7&export=download',
+'https://drive.google.com/uc?id=1iI1GSghFI5BiyQ01M7FL_UE-EyPPD-oT&export=download',
+'https://drive.google.com/uc?id=14PixcanqWPB79Yc5ioKXuL3_uTqQLVUi&export=download',
+'https://drive.google.com/uc?id=1MzIPguxKci5QGg_T6i59bJEFnRsEwCHU&export=download',
+'https://drive.google.com/uc?id=1NTuinbRYKFfMWJIHomhE04KBFyiuTgp4&export=download',
+'https://drive.google.com/uc?id=11sW9RBOI3fNqxYUneJEH0DKhfSDVzcBQ&export=download',
+'https://drive.google.com/uc?id=1otcLQLUVz84qB3ROF4AEpjLa_Fqk3A57&export=download'
 ]
 
 # Sử dụng cache để tải dữ liệu vào SQLite nếu chưa tồn tại
