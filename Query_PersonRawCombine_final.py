@@ -81,7 +81,7 @@ if st.button("Tìm kiếm nèoo"):
             st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
     else:
         st.warning("Quên không nhập IdentityNo kìaa")
-'''
+
 # Phân trang kết quả nếu cần thiết
 def paginate_dataframe(df, page_size=20):
     total_rows = df.shape[0]
@@ -95,4 +95,4 @@ if 'filtered_df' in locals() and not filtered_df.empty:
     paginated_df = paginate_dataframe(filtered_df)
     st.write("Hiển thị kết quả phân trang:")
     st.dataframe(paginated_df)
-'''
+
