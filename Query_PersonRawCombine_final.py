@@ -19,7 +19,7 @@ file_urls = [
     'https://drive.google.com/uc?id=1otcLQLUVz84qB3ROF4AEpjLa_Fqk3A57&export=download'
 ]
 
-# Sử dụng cache để tải và kết hợp dữ liệu từ các file CSV
+# Sử dụng cache để tải dữ liệu nếu chưa tồn tại
 @st.cache_data
 def load_data():
     # Tạo thư mục nếu chưa có
@@ -43,13 +43,12 @@ def load_data():
         df = pd.read_csv(output, names=header, low_memory=False)
         dfs.append(df)
 
+    # Gộp các DataFrame lại với nhau mà không có bất kỳ bước lọc nào
     combined_df = pd.concat(dfs, ignore_index=True)
-    # Xóa khoảng trắng thừa và chuyển thành chữ thường
-    combined_df['IdentityNo'] = combined_df['IdentityNo'].str.strip().str.lower()
 
     return combined_df
 
-# Tải dữ liệu từ các file CSV (chỉ khi cần)
+# Tải dữ liệu
 combined_df = load_data()
 
 # Giao diện người dùng bằng Streamlit
@@ -61,7 +60,7 @@ identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 # Thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
 if st.button("Tìm kiếm nèoo"):
     if identity_number:
-        identity_number = identity_number.strip().lower()
+        # Không thay đổi bất kỳ định dạng nào của dữ liệu gốc
         filtered_df = combined_df[combined_df['IdentityNo'] == identity_number]
 
         if not filtered_df.empty:
@@ -79,3 +78,4 @@ def paginate_dataframe(df, page_size=20):
     start_idx = (current_page - 1) * page_size
     end_idx = start_idx + page_size
     return df.iloc[start_idx:end_idx]
+
