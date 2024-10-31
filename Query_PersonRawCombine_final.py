@@ -58,7 +58,7 @@ def load_data_to_sqlite():
         for f in os.listdir(folder_path):
             if f.endswith('.csv'):
                 df = pd.read_csv(os.path.join(folder_path, f), names=header, low_memory=False)
-                dfs.append(df)
+                combined_df = pd.concat([combined_df, df], ignore_index=True)  # Gộp trực tiếp vào combined_df
 
         # Gộp tất cả các DataFrame lại thành một DataFrame duy nhất bằng concat
         combined_df = pd.concat(dfs, ignore_index=True)
