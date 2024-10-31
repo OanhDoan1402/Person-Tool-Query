@@ -5,28 +5,30 @@ import os
 
 # Đường dẫn tới thư mục để lưu file CSV đã tải xuống
 folder_path = "download_drive"
-db_path = "combined_data.db"
+combined_file_name = "combine_df.csv"
 
-# URL của file CSV đã được gộp sẵn trên Google Drive (sửa lại để tải trực tiếp)
-combined_file_url = 'https://drive.google.com/uc?id=YOUR_COMBINED_FILE_ID&export=download'
+# URL của file CSV đã được gộp sẵn trên Google Drive (sử dụng ID của file để tải trực tiếp)
+combined_file_url = 'https://drive.google.com/uc?id=13qxhkFspIWUpXrMlIgxsDd8ZPItFFhER&export=download'
 
 # Sử dụng cache để tải dữ liệu vào DataFrame nếu chưa tồn tại
 @st.cache_data
 def load_combined_data():
-    # Nếu file database đã tồn tại, không cần tải lại dữ liệu
+    # Tạo thư mục nếu chưa có
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
     # Đường dẫn để lưu file đã tải xuống
-    combined_file_path = os.path.join(folder_path, 'combine_df.csv')
+    combined_file_path = os.path.join(folder_path, combined_file_name)
 
-    # Tải file CSV đã được gộp từ Google Drive
-    response = requests.get(combined_file_url)
-    if response.status_code == 200:
-        with open(combined_file_path, 'wb') as f:
-            f.write(response.content)
-    else:
-        st.error(f"Lỗi tải file từ URL: {combined_file_url}")
+    # Kiểm tra nếu file đã tồn tại thì không cần tải lại
+    if not os.path.exists(combined_file_path):
+        # Tải file CSV đã được gộp từ Google Drive
+        response = requests.get(combined_file_url)
+        if response.status_code == 200:
+            with open(combined_file_path, 'wb') as f:
+                f.write(response.content)
+        else:
+            st.error(f"Lỗi tải file từ URL: {combined_file_url}")
     
     # Đọc file CSV và trả về DataFrame
     combined_df = pd.read_csv(combined_file_path, low_memory=False)
