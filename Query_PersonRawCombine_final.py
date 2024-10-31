@@ -19,15 +19,21 @@ db_path = "combined_data.db"
 
 # URLs của các file trên Google Drive
 file_urls = [
-    'https://drive.google.com/uc?id=1NCCXd9ei81ImegtIr5KdAPr0O1-A7J7F',
-    'https://drive.google.com/uc?id=1kCa4qKFVGkePKM3ltP_Zw65-trgdy9X2',
-    'https://drive.google.com/uc?id=1QmCwQl8aAutlBvDDYbi6jFaqWbwXA-j3',
-    'https://drive.google.com/uc?id=1xp75FLWcwwRmDTlhfffzxuujgB1g3mZm',
-    'https://drive.google.com/uc?id=1p2YRevYBlMsuFGx26rlnzAD-3ailTtPq',
-    'https://drive.google.com/uc?id=1-HmYrP873kjFWM2yFFwJTLNsjFKwng4O',
-    'https://drive.google.com/uc?id=1N6zQgTpocGEps9NuG0Pp08wOws2GthaY',
-    'https://drive.google.com/uc?id=1pp_DA7VdrBptFtROxeixfDzq_jQW21V2',
-    'https://drive.google.com/uc?id=1tifuC6Petn1Tpx9AKeeJr5k_pxR9548D'
+   'https://drive.google.com/uc?id=106Lxh2NUpgT6IFL2KaXY9UnFzlvQd7ol',
+   'https://drive.google.com/uc?id=1EzEWTq_L0Qu_du9rJltW4vhFrFbzuCJL',
+   'https://drive.google.com/uc?id=13BgFJhVfRdaHS9zv3rPOqPqLPKM7c3AY',
+   'https://drive.google.com/uc?id=1Zrp232Ufy_16bKgj7DCboFMe9wu5TPGy',
+   'https://drive.google.com/uc?id=1FgN_JcLzE1swa1hI3WG1Ys7BsKmMiZ3F',
+   'https://drive.google.com/uc?id=1PTAb56aEQ6WAW62WLTnyYE0bJgPVEPjJ',
+   'https://drive.google.com/uc?id=1BHGtkzHbPg8IgM5DURGP3_n9ZVN7fI0l',
+   'https://drive.google.com/uc?id=1tkTOrlnq7Dv7Smcbg6L2VMbMHPaFsEiG',
+   'https://drive.google.com/uc?id=1GQrTA1H5ozW8A4xhen0CiTFM8IIUTfai',
+   'https://drive.google.com/uc?id=1HaJNmziUpoEOuFkQpZ5aUAlYxFTS1N61',
+   'https://drive.google.com/uc?id=1wmT1xQElJqD4BaWgW3gWHGOjcVYXsF0Y',
+   'https://drive.google.com/uc?id=1LQve3Rnj4bVtb_xg2PUyOmHZgOd-FG2_',
+   'https://drive.google.com/uc?id=1RRFT_u7hIc6sLIFArf_erhdzvWM2gNWj',
+   'https://drive.google.com/uc?id=1Uk-tZYLfgS7PdxCGMPIpAH7TB2PtoSaL',
+   'https://drive.google.com/uc?id=1AY9pCiaYnTYh6bMKGkdrTyatkiW7Mnzs'
 ]
 
 # Sử dụng cache để tải dữ liệu vào SQLite nếu chưa tồn tại
