@@ -1,42 +1,74 @@
+
+'''
+pip install pandas gdown
+pip install streamlit
+pip install gdown
+streamlit run your_script.py  -- chạy thử ứng dụng
+'''
+
+
 import streamlit as st
 import pandas as pd
-import requests
 import os
+import sqlite3
+import gdown
 
-# Đường dẫn tới thư mục để lưu file CSV đã tải xuống
+# Đường dẫn tới thư mục chứa các file CSV đã tải xuống
 folder_path = "download_drive"
-combined_file_name = "combine_df.csv"
+db_path = "combined_data.db"
 
-# URL của file CSV đã được gộp sẵn trên Google Drive (sử dụng ID của file để tải trực tiếp)
-combined_file_url = 'https://drive.google.com/uc?id=1fibAPClD6FSZ9vtV8uUf_eSayBU7T8hO&export=download'
+# URLs của các file trên Google Drive
+file_urls = [
+    'https://drive.google.com/uc?id=1NCCXd9ei81ImegtIr5KdAPr0O1-A7J7F',
+    'https://drive.google.com/uc?id=1kCa4qKFVGkePKM3ltP_Zw65-trgdy9X2',
+    'https://drive.google.com/uc?id=1QmCwQl8aAutlBvDDYbi6jFaqWbwXA-j3',
+    'https://drive.google.com/uc?id=1xp75FLWcwwRmDTlhfffzxuujgB1g3mZm',
+    'https://drive.google.com/uc?id=1p2YRevYBlMsuFGx26rlnzAD-3ailTtPq',
+    'https://drive.google.com/uc?id=1-HmYrP873kjFWM2yFFwJTLNsjFKwng4O',
+    'https://drive.google.com/uc?id=1N6zQgTpocGEps9NuG0Pp08wOws2GthaY',
+    'https://drive.google.com/uc?id=1pp_DA7VdrBptFtROxeixfDzq_jQW21V2',
+    'https://drive.google.com/uc?id=1tifuC6Petn1Tpx9AKeeJr5k_pxR9548D'
+]
 
-# Sử dụng cache để tải dữ liệu vào DataFrame nếu chưa tồn tại
+# Sử dụng cache để tải dữ liệu vào SQLite nếu chưa tồn tại
 @st.cache_data
-def load_combined_data():
-    # Tạo thư mục nếu chưa có
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+def load_data_to_sqlite():
+    # Nếu file database đã tồn tại, không cần tải lại dữ liệu
+    if not os.path.exists(db_path):
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
 
-    # Đường dẫn để lưu file đã tải xuống
-    combined_file_path = os.path.join(folder_path, combined_file_name)
+        # Tải các file CSV từ Google Drive về thư mục cục bộ
+        for idx, url in enumerate(file_urls):
+            output_file = os.path.join(folder_path, f'file_{idx + 1}.csv')
+            if not os.path.exists(output_file):
+                gdown.download(url, output_file, quiet=False)
 
-    # Kiểm tra nếu file đã tồn tại thì không cần tải lại
-    if not os.path.exists(combined_file_path):
-        # Tải file CSV đã được gộp từ Google Drive
-        response = requests.get(combined_file_url)
-        if response.status_code == 200:
-            with open(combined_file_path, 'wb') as f:
-                f.write(response.content)
-        else:
-            st.error(f"Lỗi tải file từ URL: {combined_file_url}")
-    
-    # Đọc file CSV và trả về DataFrame
-    combined_df = pd.read_csv(combined_file_path, low_memory=False)
-    
-    return combined_df
+        # Đọc các file CSV và kết hợp chúng lại
+        header = ["PersonCode", "IdentityNo", "en_LastName", "en_MiddleName", "en_FirstName", "Address", "BirthDate", "Status", "Version", "STT"]
+        dfs = []
 
-# Tải dữ liệu vào DataFrame (chỉ khi cần)
-combined_df = load_combined_data()
+        # Đọc tất cả các file CSV trong thư mục và lưu vào danh sách
+        for f in os.listdir(folder_path):
+            if f.endswith('.csv'):
+                df = pd.read_csv(os.path.join(folder_path, f), names=header, low_memory=False)
+                dfs.append(df)
+
+        # Gộp tất cả các DataFrame lại thành một DataFrame duy nhất bằng concat
+        combined_df = pd.concat(dfs, ignore_index=True)
+
+        # Thêm cột mới để lấy năm từ BirthDate
+        combined_df['BirthYear'] = pd.to_datetime(combined_df['BirthDate'], errors='coerce').dt.year
+
+        # Lưu vào SQLite
+        conn = sqlite3.connect(db_path)
+        combined_df.to_sql('PersonData', conn, if_exists='replace', index=False)
+        conn.close()
+
+
+
+# Tải dữ liệu vào SQLite (chỉ khi cần)
+load_data_to_sqlite()
 
 # Giao diện người dùng bằng Streamlit
 st.title("PersonRawCombine Query Tool")
@@ -44,21 +76,31 @@ st.title("PersonRawCombine Query Tool")
 # Nhập IdentityNo để tìm kiếm
 identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 
-# Thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
+# Kết nối đến SQLite và thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
 if st.button("Tìm kiếm nèoo"):
     if identity_number:
-        identity_number = identity_number.strip().lower()
-        # Truy vấn dữ liệu
-        filtered_df = combined_df[combined_df['IdentityNo'].str.lower() == identity_number]
-        
+        conn = sqlite3.connect(db_path)
+        query = "SELECT * FROM PersonData WHERE IdentityNo = ?"
+        filtered_df = pd.read_sql_query(query, conn, params=(identity_number,))
+        conn.close()
+
         if not filtered_df.empty:
             st.write("Kết quả tìm kiếm:")
             st.dataframe(filtered_df)
         else:
             st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
     else:
-        st.warning("Quên không nhập IdentityNo kìaa")
+        st.warning("Quên không nhập IdentityNo kìa")
 
-# Thêm thông tin về số lượng kết quả tìm kiếm và tổng số lượng bản ghi
-if 'filtered_df' in locals() and not filtered_df.empty:
-    st.write(f"Số lượng kết quả tìm kiếm: {len(filtered_df)} / {len(combined_df)}")
+# Phân trang kết quả nếu cần thiết
+def paginate_dataframe(df, page_size=20):
+    total_rows = df.shape[0]
+    current_page = st.number_input("Trang", min_value=1, max_value=(total_rows // page_size) + 1, step=1)
+    start_idx = (current_page - 1) * page_size
+    end_idx = start_idx + page_size
+    return df.iloc[start_idx:end_idx]
+
+################## CHẠY CÂU LỆNH NÀY ĐỂ RA WEB QUERY 
+
+#streamlit run Query_PersonRawCombine.py
+
