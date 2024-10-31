@@ -11,7 +11,7 @@ import streamlit as st
 import pandas as pd
 import os
 import sqlite3
-import gdown
+import requests
 
 # Đường dẫn tới thư mục chứa các file CSV đã tải xuống
 folder_path = "download_drive"
@@ -42,7 +42,12 @@ def load_data_to_sqlite():
         for idx, url in enumerate(file_urls):
             output_file = os.path.join(folder_path, f'file_{idx + 1}.csv')
             if not os.path.exists(output_file):
-                gdown.download(url, output_file, quiet=False)
+                response = requests.get(url)
+                if response.status_code == 200:
+                    with open(output_file, 'wb') as f:
+                        f.write(response.content)
+                else:
+                    st.error(f"Lỗi tải file từ URL: {url}")
 
         # Đọc các file CSV và kết hợp chúng lại
         header = ["PersonCode", "IdentityNo", "en_LastName", "en_MiddleName", "en_FirstName", "Address", "BirthDate", "Status", "Version", "STT"]
@@ -64,8 +69,6 @@ def load_data_to_sqlite():
         conn = sqlite3.connect(db_path)
         combined_df.to_sql('PersonData', conn, if_exists='replace', index=False)
         conn.close()
-
-
 
 # Tải dữ liệu vào SQLite (chỉ khi cần)
 load_data_to_sqlite()
@@ -99,6 +102,8 @@ def paginate_dataframe(df, page_size=20):
     start_idx = (current_page - 1) * page_size
     end_idx = start_idx + page_size
     return df.iloc[start_idx:end_idx]
+
+
 
 ################## CHẠY CÂU LỆNH NÀY ĐỂ RA WEB QUERY 
 
