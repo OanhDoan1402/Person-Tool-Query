@@ -7,7 +7,7 @@ import os
 folder_path = "download_drive"
 combined_file_name = "combine_df.csv"
 
-# URL của file CSV đã được gộp sẵn trên Google Drive (sử dụng ID của file để tải trực tiếp)
+# URL của file CSV đã được gộp sẵn trên Google Drive
 combined_file_url = 'https://drive.google.com/uc?id=13qxhkFspIWUpXrMlIgxsDd8ZPItFFhER&export=download'
 
 # Sử dụng cache để tải dữ liệu vào DataFrame nếu chưa tồn tại
@@ -32,11 +32,17 @@ def load_combined_data():
     
     # Đọc file CSV và trả về DataFrame
     combined_df = pd.read_csv(combined_file_path, low_memory=False)
+
+    # Xóa khoảng trắng và các ký tự không mong muốn khỏi tên cột
+    combined_df.columns = combined_df.columns.str.strip()
     
     return combined_df
 
 # Tải dữ liệu vào DataFrame (chỉ khi cần)
 combined_df = load_combined_data()
+
+# Kiểm tra tên các cột trong DataFrame
+st.write("Tên các cột trong DataFrame:", combined_df.columns)
 
 # Giao diện người dùng bằng Streamlit
 st.title("PersonRawCombine Query Tool")
@@ -48,14 +54,18 @@ identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 if st.button("Tìm kiếm nèoo"):
     if identity_number:
         identity_number = identity_number.strip().lower()
-        # Truy vấn dữ liệu
-        filtered_df = combined_df[combined_df['IdentityNo'].str.lower() == identity_number]
+        # Kiểm tra xem cột "IdentityNo" có tồn tại trong DataFrame không
+        if 'IdentityNo' in combined_df.columns:
+            # Truy vấn dữ liệu
+            filtered_df = combined_df[combined_df['IdentityNo'].str.lower() == identity_number]
         
-        if not filtered_df.empty:
-            st.write("Kết quả tìm kiếm:")
-            st.dataframe(filtered_df)
+            if not filtered_df.empty:
+                st.write("Kết quả tìm kiếm:")
+                st.dataframe(filtered_df)
+            else:
+                st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
         else:
-            st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
+            st.error("Cột 'IdentityNo' không tồn tại trong dữ liệu. Vui lòng kiểm tra lại tên cột.")
     else:
         st.warning("Quên không nhập IdentityNo kìaa")
 
