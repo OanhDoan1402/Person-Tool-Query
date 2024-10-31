@@ -57,6 +57,9 @@ st.title("PersonRawCombine Query Tool")
 # Nhập IdentityNo để tìm kiếm
 identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 
+# Tổng số bản ghi trong DataFrame
+total_records = len(combined_df)
+
 # Thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
 if st.button("Tìm kiếm nèoo"):
     if identity_number:
@@ -66,8 +69,12 @@ if st.button("Tìm kiếm nèoo"):
         if not filtered_df.empty:
             st.write("Kết quả tìm kiếm:")
             st.dataframe(filtered_df)
+            # Hiển thị số lượng kết quả tìm kiếm trên tổng số bản ghi
+            st.write(f"Số lượng kết quả tìm kiếm: {len(filtered_df)} / {total_records}")
         else:
             st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
+            # Hiển thị tổng số bản ghi nếu không tìm thấy kết quả
+            st.write(f"Tổng số lượng bản ghi trong dữ liệu: {total_records}")
     else:
         st.warning("Quên không nhập IdentityNo kìaa")
 
@@ -78,4 +85,3 @@ def paginate_dataframe(df, page_size=20):
     start_idx = (current_page - 1) * page_size
     end_idx = start_idx + page_size
     return df.iloc[start_idx:end_idx]
-
