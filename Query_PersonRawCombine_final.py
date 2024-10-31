@@ -13,7 +13,6 @@ import os
 import sqlite3
 import requests
 
-
 # Đường dẫn tới thư mục chứa các file CSV đã tải xuống
 folder_path = "download_drive"
 db_path = "combined_data.db"
@@ -52,16 +51,13 @@ def load_data_to_sqlite():
 
         # Đọc các file CSV và kết hợp chúng lại
         header = ["PersonCode", "IdentityNo", "en_LastName", "en_MiddleName", "en_FirstName", "Address", "BirthDate", "Status", "Version", "STT"]
-        dfs = []
+        combined_df = pd.DataFrame()  # Khởi tạo một DataFrame rỗng
 
-        # Đọc tất cả các file CSV trong thư mục và lưu vào danh sách
+        # Đọc tất cả các file CSV trong thư mục và lưu vào DataFrame
         for f in os.listdir(folder_path):
             if f.endswith('.csv'):
                 df = pd.read_csv(os.path.join(folder_path, f), names=header, low_memory=False)
-                combined_df = pd.concat([combined_df, df], ignore_index=True)  # Gộp trực tiếp vào combined_df
-
-        # Gộp tất cả các DataFrame lại thành một DataFrame duy nhất bằng concat
-        combined_df = pd.concat(dfs, ignore_index=True)
+                combined_df = pd.concat([combined_df, df], ignore_index=True)  # Gộp vào combined_df
 
         # Thêm cột mới để lấy năm từ BirthDate
         combined_df['BirthYear'] = pd.to_datetime(combined_df['BirthDate'], errors='coerce').dt.year
@@ -105,8 +101,6 @@ if st.button("Tìm kiếm nèoo"):
             st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
     else:
         st.warning("Quên không nhập IdentityNo kìa")
-
-
 
 
 ################## CHẠY CÂU LỆNH NÀY ĐỂ RA WEB QUERY 
