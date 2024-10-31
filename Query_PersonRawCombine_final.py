@@ -1,48 +1,33 @@
 import streamlit as st
 import pandas as pd
-import requests
-import os
+import pyodbc
 
-# Đường dẫn tới thư mục để lưu file CSV đã tải xuống
-folder_path = "download_drive"
-combined_file_name = "combine_df.csv"
+# Thông tin kết nối tới SQL Server
+server = '192.168.1.39,63839'  # Thường là IP hoặc tên server
+database = 'BiinForm_Data_Ingestion'  # Tên database bạn muốn kết nối tới
+username = 'BI.BA.Select'  # Tên đăng nhập SQL Server của bạn
+password = 'lsdlwiEkmNDF09)(DNFNk87'  # Mật khẩu đăng nhập
 
-# URL của file CSV đã được gộp sẵn trên Google Drive
-combined_file_url = 'https://drive.google.com/uc?id=13qxhkFspIWUpXrMlIgxsDd8ZPItFFhER&export=download'
+# Kết nối tới SQL Server
+def get_connection():
+    connection = pyodbc.connect(
+        f'DRIVER={{ODBC Driver 17 for SQL Server}};'
+        f'SERVER={server};DATABASE={database};'
+        f'UID={username};PWD={password}'
+    )
+    return connection
 
-# Sử dụng cache để tải dữ liệu vào DataFrame nếu chưa tồn tại
+# Sử dụng cache để giữ kết nối (nếu cần thiết)
 @st.cache_data
-def load_combined_data():
-    # Tạo thư mục nếu chưa có
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
+def load_data():
+    conn = get_connection()
+    query = "SELECT * FROM PersonCodeRaw_combine"  # Thay thế bằng câu lệnh SQL phù hợp
+    df = pd.read_sql(query, conn)
+    conn.close()
+    return df
 
-    # Đường dẫn để lưu file đã tải xuống
-    combined_file_path = os.path.join(folder_path, combined_file_name)
-
-    # Kiểm tra nếu file đã tồn tại thì không cần tải lại
-    if not os.path.exists(combined_file_path):
-        # Tải file CSV đã được gộp từ Google Drive
-        response = requests.get(combined_file_url)
-        if response.status_code == 200:
-            with open(combined_file_path, 'wb') as f:
-                f.write(response.content)
-        else:
-            st.error(f"Lỗi tải file từ URL: {combined_file_url}")
-    
-    # Đọc file CSV và trả về DataFrame
-    combined_df = pd.read_csv(combined_file_path, low_memory=False)
-
-    # Xóa khoảng trắng và các ký tự không mong muốn khỏi tên cột
-    combined_df.columns = combined_df.columns.str.strip()
-    
-    return combined_df
-
-# Tải dữ liệu vào DataFrame (chỉ khi cần)
-combined_df = load_combined_data()
-
-# Kiểm tra tên các cột trong DataFrame
-st.write("Tên các cột trong DataFrame:", combined_df.columns)
+# Tải dữ liệu
+combined_df = load_data()
 
 # Giao diện người dùng bằng Streamlit
 st.title("PersonRawCombine Query Tool")
@@ -50,25 +35,19 @@ st.title("PersonRawCombine Query Tool")
 # Nhập IdentityNo để tìm kiếm
 identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 
-# Thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
+# Thực hiện tìm kiếm khi người dùng nhấn nút "Tìm kiếm"
 if st.button("Tìm kiếm nèoo"):
     if identity_number:
-        identity_number = identity_number.strip().lower()
-        # Kiểm tra xem cột "IdentityNo" có tồn tại trong DataFrame không
-        if 'IdentityNo' in combined_df.columns:
-            # Truy vấn dữ liệu
-            filtered_df = combined_df[combined_df['IdentityNo'].str.lower() == identity_number]
-        
-            if not filtered_df.empty:
-                st.write("Kết quả tìm kiếm:")
-                st.dataframe(filtered_df)
-            else:
-                st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
+        # Lọc kết quả theo IdentityNo
+        filtered_df = combined_df[combined_df['IdentityNo'].str.strip().str.lower() == identity_number.strip().lower()]
+        if not filtered_df.empty:
+            st.write("Kết quả tìm kiếm:")
+            st.dataframe(filtered_df)
         else:
-            st.error("Cột 'IdentityNo' không tồn tại trong dữ liệu. Vui lòng kiểm tra lại tên cột.")
+            st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
     else:
         st.warning("Quên không nhập IdentityNo kìaa")
 
-# Thêm thông tin về số lượng kết quả tìm kiếm và tổng số lượng bản ghi
+# Hiển thị số lượng kết quả tìm kiếm / tổng số bản ghi
 if 'filtered_df' in locals() and not filtered_df.empty:
     st.write(f"Số lượng kết quả tìm kiếm: {len(filtered_df)} / {len(combined_df)}")
