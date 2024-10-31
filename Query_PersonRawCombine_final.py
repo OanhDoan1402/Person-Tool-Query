@@ -8,7 +8,7 @@ folder_path = "download_drive"
 combined_file_name = "combine_df.csv"
 
 # URL của file CSV đã được gộp sẵn trên Google Drive (sử dụng ID của file để tải trực tiếp)
-combined_file_url = 'https://drive.google.com/uc?id=13qxhkFspIWUpXrMlIgxsDd8ZPItFFhER&export=download'
+combined_file_url = 'https://drive.google.com/uc?id=1fibAPClD6FSZ9vtV8uUf_eSayBU7T8hO&export=download'
 
 # Sử dụng cache để tải dữ liệu vào DataFrame nếu chưa tồn tại
 @st.cache_data
