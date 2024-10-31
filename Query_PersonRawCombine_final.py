@@ -13,6 +13,7 @@ import os
 import sqlite3
 import requests
 
+
 # Đường dẫn tới thư mục chứa các file CSV đã tải xuống
 folder_path = "download_drive"
 db_path = "combined_data.db"
@@ -83,25 +84,28 @@ identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 if st.button("Tìm kiếm nèoo"):
     if identity_number:
         conn = sqlite3.connect(db_path)
+        
+        # Truy vấn tổng số lượng bản ghi trong toàn bộ DataFrame
+        total_records_query = "SELECT COUNT(*) FROM PersonData"
+        total_records = pd.read_sql_query(total_records_query, conn).iloc[0, 0]
+
+        # Truy vấn kết quả theo IdentityNo
         query = "SELECT * FROM PersonData WHERE IdentityNo = ?"
         filtered_df = pd.read_sql_query(query, conn, params=(identity_number,))
         conn.close()
 
+        # Hiển thị kết quả tìm kiếm
         if not filtered_df.empty:
             st.write("Kết quả tìm kiếm:")
             st.dataframe(filtered_df)
+
+            # Hiển thị số lượng bản ghi tìm được / tổng số bản ghi
+            st.write(f"Kết quả tìm kiếm: {len(filtered_df)} / {total_records} bản ghi")
         else:
             st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
     else:
         st.warning("Quên không nhập IdentityNo kìa")
 
-# Phân trang kết quả nếu cần thiết
-def paginate_dataframe(df, page_size=20):
-    total_rows = df.shape[0]
-    current_page = st.number_input("Trang", min_value=1, max_value=(total_rows // page_size) + 1, step=1)
-    start_idx = (current_page - 1) * page_size
-    end_idx = start_idx + page_size
-    return df.iloc[start_idx:end_idx]
 
 
 
