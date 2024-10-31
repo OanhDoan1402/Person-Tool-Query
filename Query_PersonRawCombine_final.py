@@ -1,12 +1,10 @@
 import streamlit as st
 import pandas as pd
 import os
-import sqlite3
 import requests
 
 # Đường dẫn tới thư mục chứa các file CSV đã tải xuống
 folder_path = "download_drive"
-db_path = "combined_data.db"
 
 # URLs của các file trên Google Drive (sửa lại để tải trực tiếp)
 file_urls = [
@@ -21,43 +19,38 @@ file_urls = [
     'https://drive.google.com/uc?id=1otcLQLUVz84qB3ROF4AEpjLa_Fqk3A57&export=download'
 ]
 
-# Sử dụng cache để tải dữ liệu vào SQLite nếu chưa tồn tại
+# Sử dụng cache để tải và kết hợp dữ liệu từ các file CSV
 @st.cache_data
-def load_data_to_sqlite():
-    # Nếu file database đã tồn tại, không cần tải lại dữ liệu
-    if not os.path.exists(db_path):
-        # Tạo thư mục nếu chưa có
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
+def load_data():
+    # Tạo thư mục nếu chưa có
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
 
-        # Tải các file CSV từ Google Drive
-        for i, url in enumerate(file_urls):
-            response = requests.get(url)
-            if response.status_code == 200:
-                with open(os.path.join(folder_path, f'file_{i+1}.csv'), 'wb') as f:
-                    f.write(response.content)
-            else:
-                st.error(f"Lỗi tải file từ URL: {url}")
+    # Tải các file CSV từ Google Drive
+    for i, url in enumerate(file_urls):
+        response = requests.get(url)
+        if response.status_code == 200:
+            with open(os.path.join(folder_path, f'file_{i+1}.csv'), 'wb') as f:
+                f.write(response.content)
+        else:
+            st.error(f"Lỗi tải file từ URL: {url}")
 
-        # Đọc các file CSV và kết hợp chúng lại
-        header = ["PersonCode", "IdentityNo", "en_LastName", "en_MiddleName", "en_FirstName", "Address", "BirthDate", "Status", "Version", "STT"]
-        dfs = []
-        output_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.csv')]
-        for output in output_files:
-            df = pd.read_csv(output, names=header, low_memory=False)
-            dfs.append(df)
+    # Đọc các file CSV và kết hợp chúng lại
+    header = ["PersonCode", "IdentityNo", "en_LastName", "en_MiddleName", "en_FirstName", "Address", "BirthDate", "Status", "Version", "STT"]
+    dfs = []
+    output_files = [os.path.join(folder_path, f) for f in os.listdir(folder_path) if f.endswith('.csv')]
+    for output in output_files:
+        df = pd.read_csv(output, names=header, low_memory=False)
+        dfs.append(df)
 
-        combined_df = pd.concat(dfs, ignore_index=True)
-        # Xóa khoảng trắng thừa và chuyển thành chữ thường
-        combined_df['IdentityNo'] = combined_df['IdentityNo'].str.strip().str.lower()
+    combined_df = pd.concat(dfs, ignore_index=True)
+    # Xóa khoảng trắng thừa và chuyển thành chữ thường
+    combined_df['IdentityNo'] = combined_df['IdentityNo'].str.strip().str.lower()
 
-        # Lưu vào SQLite
-        conn = sqlite3.connect(db_path)
-        combined_df.to_sql('PersonData', conn, if_exists='replace', index=False)
-        conn.close()
+    return combined_df
 
-# Tải dữ liệu vào SQLite (chỉ khi cần)
-load_data_to_sqlite()
+# Tải dữ liệu từ các file CSV (chỉ khi cần)
+combined_df = load_data()
 
 # Giao diện người dùng bằng Streamlit
 st.title("PersonRawCombine Query Tool")
@@ -65,14 +58,11 @@ st.title("PersonRawCombine Query Tool")
 # Nhập IdentityNo để tìm kiếm
 identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 
-# Kết nối đến SQLite và thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
+# Thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
 if st.button("Tìm kiếm nèoo"):
     if identity_number:
         identity_number = identity_number.strip().lower()
-        conn = sqlite3.connect(db_path)
-        query = "SELECT * FROM PersonData WHERE LOWER(IdentityNo) = ?"
-        filtered_df = pd.read_sql_query(query, conn, params=(identity_number,))
-        conn.close()
+        filtered_df = combined_df[combined_df['IdentityNo'] == identity_number]
 
         if not filtered_df.empty:
             st.write("Kết quả tìm kiếm:")
@@ -95,4 +85,3 @@ if 'filtered_df' in locals() and not filtered_df.empty:
     paginated_df = paginate_dataframe(filtered_df)
     st.write("Hiển thị kết quả phân trang:")
     st.dataframe(paginated_df)
-
