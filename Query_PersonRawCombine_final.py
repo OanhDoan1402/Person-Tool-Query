@@ -79,9 +79,3 @@ def paginate_dataframe(df, page_size=20):
     start_idx = (current_page - 1) * page_size
     end_idx = start_idx + page_size
     return df.iloc[start_idx:end_idx]
-
-# Tìm kiếm phân trang khi có kết quả lớn
-if 'filtered_df' in locals() and not filtered_df.empty:
-    paginated_df = paginate_dataframe(filtered_df)
-    st.write("Hiển thị kết quả phân trang:")
-    st.dataframe(paginated_df)
