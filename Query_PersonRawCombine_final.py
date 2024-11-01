@@ -6,7 +6,7 @@ import requests
 
 # Đường dẫn tới thư mục chứa các file CSV đã tải xuống
 folder_path = "download_drive"
-db_path = "combined_data.db"  # Sử dụng file SQLite cục bộ thay vì bộ nhớ tạm để tránh lỗi trên Streamlit Cloud
+db_path = "/tmp/combined_data.db"  # Đặt đường dẫn đến thư mục tạm
 
 # URLs của các file trên Google Drive
 file_urls = [
