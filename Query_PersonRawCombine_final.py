@@ -10,7 +10,20 @@ db_path = "/tmp/combined_data.db"  # Sử dụng thư mục tạm thời cho Str
 # URLs của các file trên Google Drive
 file_urls = [
    'https://drive.google.com/uc?id=106Lxh2NUpgT6IFL2KaXY9UnFzlvQd7ol',
-   # Các URL còn lại...
+   'https://drive.google.com/uc?id=1EzEWTq_L0Qu_du9rJltW4vhFrFbzuCJL',
+   'https://drive.google.com/uc?id=13BgFJhVfRdaHS9zv3rPOqPqLPKM7c3AY',
+   'https://drive.google.com/uc?id=1Zrp232Ufy_16bKgj7DCboFMe9wu5TPGy',
+   'https://drive.google.com/uc?id=1FgN_JcLzE1swa1hI3WG1Ys7BsKmMiZ3F',
+   'https://drive.google.com/uc?id=1PTAb56aEQ6WAW62WLTnyYE0bJgPVEPjJ',
+   'https://drive.google.com/uc?id=1BHGtkzHbPg8IgM5DURGP3_n9ZVN7fI0l',
+   'https://drive.google.com/uc?id=1tkTOrlnq7Dv7Smcbg6L2VMbMHPaFsEiG',
+   'https://drive.google.com/uc?id=1GQrTA1H5ozW8A4xhen0CiTFM8IIUTfai',
+   'https://drive.google.com/uc?id=1HaJNmziUpoEOuFkQpZ5aUAlYxFTS1N61',
+   'https://drive.google.com/uc?id=1wmT1xQElJqD4BaWgW3gWHGOjcVYXsF0Y',
+   'https://drive.google.com/uc?id=1LQve3Rnj4bVtb_xg2PUyOmHZgOd-FG2_',
+   'https://drive.google.com/uc?id=1RRFT_u7hIc6sLIFArf_erhdzvWM2gNWj',
+   'https://drive.google.com/uc?id=1Uk-tZYLfgS7PdxCGMPIpAH7TB2PtoSaL',
+   'https://drive.google.com/uc?id=1AY9pCiaYnTYh6bMKGkdrTyatkiW7Mnzs'
 ]
 
 # Sử dụng cache để tải dữ liệu vào SQLite nếu chưa tồn tại
