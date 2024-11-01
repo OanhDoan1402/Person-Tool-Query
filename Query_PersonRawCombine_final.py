@@ -100,7 +100,10 @@ def load_data_to_sqlite():
         st.write(f"Database đã được tạo trong bộ nhớ. Không cần tải lại dữ liệu.")
 
 # Tải dữ liệu vào SQLite (chỉ khi cần)
-load_data_to_sqlite()
+try:
+    load_data_to_sqlite()
+except Exception as e:
+    st.error(f"Đã xảy ra lỗi khi tải dữ liệu vào SQLite: {e}")
 
 # Giao diện người dùng bằng Streamlit
 st.title("PersonRawCombine Query Tool")
@@ -143,6 +146,7 @@ def paginate_dataframe(df, page_size=20):
     end_idx = start_idx + page_size
     return df.iloc[start_idx:end_idx]
 
+st.write("Sẵn sàng chạy lệnh stream")
 
 # Chạy Streamlit
 # streamlit run Query_PersonRawCombine.py
