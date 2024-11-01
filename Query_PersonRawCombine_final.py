@@ -6,7 +6,7 @@ import requests
 
 # Đường dẫn tới thư mục chứa các file CSV đã tải xuống
 folder_path = "download_drive"
-db_path = ":memory:"  # Sử dụng bộ nhớ để tránh lỗi ghi đĩa trên Streamlit Cloud
+db_path = "combined_data.db"  # Sử dụng file SQLite cục bộ thay vì bộ nhớ tạm để tránh lỗi trên Streamlit Cloud
 
 # URLs của các file trên Google Drive
 file_urls = [
@@ -31,70 +31,73 @@ file_urls = [
 @st.cache_data
 def load_data_to_sqlite():
     st.write("Bắt đầu tải dữ liệu...")
-    # Nếu thư mục không tồn tại thì tạo thư mục
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-        st.write(f"Đã tạo thư mục {folder_path}")
+    # Nếu file database đã tồn tại, không cần tải lại dữ liệu
+    if not os.path.exists(db_path):
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            st.write(f"Đã tạo thư mục {folder_path}")
 
-    # Tải các file CSV từ Google Drive về thư mục cục bộ
-    for idx, url in enumerate(file_urls):
-        output_file = os.path.join(folder_path, f'file_{idx + 1}.csv')
-        if not os.path.exists(output_file):
-            st.write(f"Đang tải file {output_file} từ URL...")
-            response = requests.get(url)
-            if response.status_code == 200:
-                # Kiểm tra xem nội dung của file có phải HTML hay không (có thể là thông báo lỗi)
-                if "<html" not in response.text.lower():
-                    with open(output_file, 'wb') as f:
-                        f.write(response.content)
-                    st.write(f"Tải thành công file: {output_file}")
+        # Tải các file CSV từ Google Drive về thư mục cục bộ
+        for idx, url in enumerate(file_urls):
+            output_file = os.path.join(folder_path, f'file_{idx + 1}.csv')
+            if not os.path.exists(output_file):
+                st.write(f"Đang tải file {output_file} từ URL...")
+                response = requests.get(url)
+                if response.status_code == 200:
+                    # Kiểm tra xem nội dung của file có phải HTML hay không (có thể là thông báo lỗi)
+                    if "<html" not in response.text.lower():
+                        with open(output_file, 'wb') as f:
+                            f.write(response.content)
+                        st.write(f"Tải thành công file: {output_file}")
+                    else:
+                        st.write(f"Lỗi: File tải về có nội dung HTML, có thể là yêu cầu xác nhận quyền. URL: {url}")
                 else:
-                    st.write(f"Lỗi: File tải về có nội dung HTML, có thể là yêu cầu xác nhận quyền. URL: {url}")
+                    st.write(f"Lỗi tải file từ URL: {url} - Mã lỗi: {response.status_code}")
             else:
-                st.write(f"Lỗi tải file từ URL: {url} - Mã lỗi: {response.status_code}")
+                st.write(f"File đã tồn tại: {output_file}")
+
+            # Kiểm tra dung lượng file sau khi tải
+            if os.path.exists(output_file):
+                file_size = os.path.getsize(output_file)
+                st.write(f"Dung lượng của file {output_file}: {file_size} bytes")
+                if file_size == 0:
+                    st.write(f"File {output_file} không có dữ liệu (rỗng).")
+
+        # Đọc các file CSV và kết hợp chúng lại
+        header = ["PersonCode", "IdentityNo", "en_LastName", "en_MiddleName", "en_FirstName", "Address", "BirthDate", "Status", "Version", "STT"]
+        dfs = []
+
+        # Đọc tất cả các file CSV trong thư mục và lưu vào danh sách
+        for f in os.listdir(folder_path):
+            if f.endswith('.csv'):
+                st.write(f"Đang đọc file {f}...")
+                try:
+                    df = pd.read_csv(os.path.join(folder_path, f), names=header, low_memory=False)
+                    if not df.empty:
+                        dfs.append(df)
+                        st.write(f"Đã đọc thành công file {f} với {len(df)} dòng.")
+                    else:
+                        st.write(f"File {f} trống hoặc không đọc được.")
+                except Exception as e:
+                    st.write(f"Lỗi khi đọc file {f}: {e}")
+
+        # Gộp tất cả các DataFrame lại thành một DataFrame duy nhất bằng concat
+        if dfs:
+            st.write("Bắt đầu gộp các DataFrame lại thành một...")
+            combined_df = pd.concat(dfs, ignore_index=True)
+
+            # In ra số lượng dòng của DataFrame sau khi gộp
+            st.write(f"Tổng số dòng sau khi gộp: {combined_df.shape[0]}")
+
+            # Lưu vào SQLite
+            conn = sqlite3.connect(db_path)
+            combined_df.to_sql('PersonData', conn, if_exists='replace', index=False)
+            st.write("Đã lưu dữ liệu vào SQLite thành công.")
+            conn.close()
         else:
-            st.write(f"File đã tồn tại: {output_file}")
-
-        # Kiểm tra dung lượng file sau khi tải
-        if os.path.exists(output_file):
-            file_size = os.path.getsize(output_file)
-            st.write(f"Dung lượng của file {output_file}: {file_size} bytes")
-            if file_size == 0:
-                st.write(f"File {output_file} không có dữ liệu (rỗng).")
-
-    # Đọc các file CSV và kết hợp chúng lại
-    header = ["PersonCode", "IdentityNo", "en_LastName", "en_MiddleName", "en_FirstName", "Address", "BirthDate", "Status", "Version", "STT"]
-    dfs = []
-
-    # Đọc tất cả các file CSV trong thư mục và lưu vào danh sách
-    for f in os.listdir(folder_path):
-        if f.endswith('.csv'):
-            st.write(f"Đang đọc file {f}...")
-            try:
-                df = pd.read_csv(os.path.join(folder_path, f), names=header, low_memory=False)
-                if not df.empty:
-                    dfs.append(df)
-                    st.write(f"Đã đọc thành công file {f} với {len(df)} dòng.")
-                else:
-                    st.write(f"File {f} trống hoặc không đọc được.")
-            except Exception as e:
-                st.write(f"Lỗi khi đọc file {f}: {e}")
-
-    # Gộp tất cả các DataFrame lại thành một DataFrame duy nhất bằng concat
-    if dfs:
-        st.write("Bắt đầu gộp các DataFrame lại thành một...")
-        combined_df = pd.concat(dfs, ignore_index=True)
-
-        # In ra số lượng dòng của DataFrame sau khi gộp
-        st.write(f"Tổng số dòng sau khi gộp: {combined_df.shape[0]}")
-
-        # Lưu vào SQLite
-        conn = sqlite3.connect(db_path)
-        combined_df.to_sql('PersonData', conn, if_exists='replace', index=False)
-        st.write("Đã lưu dữ liệu vào SQLite thành công.")
-        conn.close()
+            st.write("Không có file nào được gộp. Danh sách dfs trống.")
     else:
-        st.write("Không có file nào được gộp. Danh sách dfs trống.")
+        st.write(f"Database đã được tạo trong bộ nhớ. Không cần tải lại dữ liệu.")
 
 # Tải dữ liệu vào SQLite (chỉ khi cần)
 load_data_to_sqlite()
@@ -131,7 +134,6 @@ if st.button("Tìm kiếm nèoo"):
     else:
         st.warning("Quên không nhập IdentityNo kìa")
         st.write("Người dùng quên không nhập IdentityNo.")
-
 
 # Phân trang kết quả nếu cần thiết
 def paginate_dataframe(df, page_size=20):
