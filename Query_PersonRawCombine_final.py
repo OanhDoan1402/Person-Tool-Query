@@ -1,12 +1,3 @@
-
-'''
-pip install pandas gdown
-pip install streamlit
-pip install gdown
-streamlit run your_script.py  -- chạy thử ứng dụng
-'''
-
-
 import streamlit as st
 import pandas as pd
 import os
@@ -15,7 +6,7 @@ import requests
 
 # Đường dẫn tới thư mục chứa các file CSV đã tải xuống
 folder_path = "download_drive"
-db_path = "combined_data.db"
+db_path = ":memory:"  # Sử dụng bộ nhớ để tránh lỗi ghi đĩa trên Streamlit Cloud
 
 # URLs của các file trên Google Drive
 file_urls = [
@@ -39,39 +30,37 @@ file_urls = [
 # Sử dụng cache để tải dữ liệu vào SQLite nếu chưa tồn tại
 @st.cache_data
 def load_data_to_sqlite():
-    print("Bắt đầu tải dữ liệu...")
+    st.write("Bắt đầu tải dữ liệu...")
     # Nếu file database đã tồn tại, không cần tải lại dữ liệu
-    if not os.path.exists(db_path):
-        print(f"Database {db_path} chưa tồn tại, bắt đầu tải dữ liệu...")
-        if not os.path.exists(folder_path):
-            os.makedirs(folder_path)
-            print(f"Đã tạo thư mục {folder_path}")
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        st.write(f"Đã tạo thư mục {folder_path}")
 
         # Tải các file CSV từ Google Drive về thư mục cục bộ
         for idx, url in enumerate(file_urls):
             output_file = os.path.join(folder_path, f'file_{idx + 1}.csv')
             if not os.path.exists(output_file):
-                print(f"Đang tải file {output_file} từ URL...")
+                st.write(f"Đang tải file {output_file} từ URL...")
                 response = requests.get(url)
                 if response.status_code == 200:
                     # Kiểm tra xem nội dung của file có phải HTML hay không (có thể là thông báo lỗi)
                     if "<html" not in response.text.lower():
                         with open(output_file, 'wb') as f:
                             f.write(response.content)
-                        print(f"Tải thành công file: {output_file}")
+                        st.write(f"Tải thành công file: {output_file}")
                     else:
-                        print(f"Lỗi: File tải về có nội dung HTML, có thể là yêu cầu xác nhận quyền. URL: {url}")
+                        st.write(f"Lỗi: File tải về có nội dung HTML, có thể là yêu cầu xác nhận quyền. URL: {url}")
                 else:
-                    print(f"Lỗi tải file từ URL: {url} - Mã lỗi: {response.status_code}")
+                    st.write(f"Lỗi tải file từ URL: {url} - Mã lỗi: {response.status_code}")
             else:
-                print(f"File đã tồn tại: {output_file}")
+                st.write(f"File đã tồn tại: {output_file}")
 
             # Kiểm tra dung lượng file sau khi tải
             if os.path.exists(output_file):
                 file_size = os.path.getsize(output_file)
-                print(f"Dung lượng của file {output_file}: {file_size} bytes")
+                st.write(f"Dung lượng của file {output_file}: {file_size} bytes")
                 if file_size == 0:
-                    print(f"File {output_file} không có dữ liệu (rỗng).")
+                    st.write(f"File {output_file} không có dữ liệu (rỗng).")
 
         # Đọc các file CSV và kết hợp chúng lại
         header = ["PersonCode", "IdentityNo", "en_LastName", "en_MiddleName", "en_FirstName", "Address", "BirthDate", "Status", "Version", "STT"]
@@ -80,70 +69,70 @@ def load_data_to_sqlite():
         # Đọc tất cả các file CSV trong thư mục và lưu vào danh sách
         for f in os.listdir(folder_path):
             if f.endswith('.csv'):
-                print(f"Đang đọc file {f}...")
+                st.write(f"Đang đọc file {f}...")
                 try:
                     df = pd.read_csv(os.path.join(folder_path, f), names=header, low_memory=False)
                     if not df.empty:
                         dfs.append(df)
-                        print(f"Đã đọc thành công file {f} với {len(df)} dòng.")
+                        st.write(f"Đã đọc thành công file {f} với {len(df)} dòng.")
                     else:
-                        print(f"File {f} trống hoặc không đọc được.")
+                        st.write(f"File {f} trống hoặc không đọc được.")
                 except Exception as e:
-                    print(f"Lỗi khi đọc file {f}: {e}")
+                    st.write(f"Lỗi khi đọc file {f}: {e}")
 
         # Gộp tất cả các DataFrame lại thành một DataFrame duy nhất bằng concat
         if dfs:
-            print("Bắt đầu gộp các DataFrame lại thành một...")
+            st.write("Bắt đầu gộp các DataFrame lại thành một...")
             combined_df = pd.concat(dfs, ignore_index=True)
 
             # In ra số lượng dòng của DataFrame sau khi gộp
-            print(f"Tổng số dòng sau khi gộp: {combined_df.shape[0]}")
+            st.write(f"Tổng số dòng sau khi gộp: {combined_df.shape[0]}")
 
             # Lưu vào SQLite
             conn = sqlite3.connect(db_path)
             combined_df.to_sql('PersonData', conn, if_exists='replace', index=False)
-            print("Đã lưu dữ liệu vào SQLite thành công.")
+            st.write("Đã lưu dữ liệu vào SQLite thành công.")
             conn.close()
         else:
-            print("Không có file nào được gộp. Danh sách dfs trống.")
+            st.write("Không có file nào được gộp. Danh sách dfs trống.")
     else:
-        print(f"Database {db_path} đã tồn tại. Không cần tải lại dữ liệu.")
+        st.write(f"Database đã được tạo trong bộ nhớ. Không cần tải lại dữ liệu.")
 
 # Tải dữ liệu vào SQLite (chỉ khi cần)
 load_data_to_sqlite()
 
 # Giao diện người dùng bằng Streamlit
 st.title("PersonRawCombine Query Tool")
-print("Đã khởi tạo giao diện Streamlit.")
+st.write("Đã khởi tạo giao diện Streamlit.")
 
 # Nhập IdentityNo để tìm kiếm
 identity_number = st.text_input("Nhập IdentityNo để tìm kiếm:")
 
 # Kết nối đến SQLite và thực hiện truy vấn khi người dùng nhấn nút "Tìm kiếm"
 if st.button("Tìm kiếm nèoo"):
-    print("Người dùng nhấn nút tìm kiếm.")
+    st.write("Người dùng nhấn nút tìm kiếm.")
     if identity_number:
         conn = sqlite3.connect(db_path)
-        query = "SELECT * FROM PersonData WHERE IdentityNo = ?"
+        query = "SELECT * FROM PersonData WHERE IdentityNo = ? ORDER BY en_FirstName"
         try:
             filtered_df = pd.read_sql_query(query, conn, params=(identity_number,))
-            print("Đã thực hiện truy vấn với SQLite.")
+            st.write("Đã thực hiện truy vấn với SQLite.")
         except Exception as e:
             st.error("Lỗi khi truy vấn dữ liệu từ SQLite: " + str(e))
-            print(f"Lỗi khi truy vấn dữ liệu: {e}")
+            st.write(f"Lỗi khi truy vấn dữ liệu: {e}")
         finally:
             conn.close()
 
         if 'filtered_df' in locals() and not filtered_df.empty:
             st.write("Kết quả tìm kiếm:")
             st.dataframe(filtered_df)
-            print("Đã hiển thị kết quả tìm kiếm.")
+            st.write("Đã hiển thị kết quả tìm kiếm.")
         else:
             st.warning("Không tìm thấy IdentityNo này trong dữ liệu.")
-            print("Không tìm thấy IdentityNo này trong dữ liệu.")
+            st.write("Không tìm thấy IdentityNo này trong dữ liệu.")
     else:
         st.warning("Quên không nhập IdentityNo kìa")
-        print("Người dùng quên không nhập IdentityNo.")
+        st.write("Người dùng quên không nhập IdentityNo.")
 
 # Phân trang kết quả nếu cần thiết
 def paginate_dataframe(df, page_size=20):
@@ -153,9 +142,7 @@ def paginate_dataframe(df, page_size=20):
     end_idx = start_idx + page_size
     return df.iloc[start_idx:end_idx]
 
-print("Sẵn sàng chạy lệnh stream")
+st.write("Sẵn sàng chạy lệnh stream")
 
 # Chạy Streamlit
 # streamlit run Query_PersonRawCombine.py
-
-
